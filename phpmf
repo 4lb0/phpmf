@@ -75,7 +75,7 @@ class MethodFinder
         $displayErrors = ini_get('display_errors');
         ini_set('display_errors', false);
         $definedFunctions = get_defined_functions();
-        $permutations =  count($args) > 1 ? self::arrayPermute($args): array($args);
+        $permutations =  self::arrayPermute($args);
         $results = array();
         $total = count($args);
         ob_start();
