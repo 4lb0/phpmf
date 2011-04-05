@@ -61,6 +61,7 @@ class MethodFinder
         'exec', 'shell_exec', 'passthru', 'system', 'mail',
         'error_log', 'flush', 'ob_.*', 'register_.*', 'bson.*', 
         'stream_.*', 'socket_.*', 'sqlite_.*', 'xmlwriter_.*',
+	'__halt_compiler', 'sleep', 'usleep',
     );
     /**
      * Find the functions by passing an example how to use it.
