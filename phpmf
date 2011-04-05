@@ -1,0 +1,142 @@
+#!/usr/bin/env php
+<?php
+/**
+ * phpmf
+ * 
+ * With PHPMethodFinder you can search for a function name.
+ * First you should write the arguments to send and then the result expected,
+ * both as if they were written in PHP.
+ *
+ * For example:
+ * <code>
+ * $ ./phpmf "'hello world'" "'Hello World'"
+ * ucwords('hello world') => 'Hello World'
+ * </code>
+ *
+ * It also corrects the order of the arguments passed:
+ * <code>
+ * ./phpmf "'input/output', '/'" "array('input','output')" 
+ * split('/', 'input/output') => array (
+ *   0 => 'input',
+ *   1 => 'output',
+ * )
+ * spliti('/', 'input/output') => array (
+ *   0 => 'input',
+ *   1 => 'output',
+ * )
+ * </code>
+ *
+ * PHP Version 5.3
+ * 
+ * @category MethodFinder
+ * @package  MethodFinder
+ * @author   Rodrigo Arce <rsarce@gmail.com>
+ * @license  MIT License - https://github.com/4lb0/phpmf/
+ * @link     https://github.com/4lb0/phpmf/
+ */
+
+/**
+ * MethodFinder
+ * 
+ * Find a function by example. Inspired by the Ruby's MethodFinder
+ * 
+ * @category MethodFinder
+ * @package  MethodFinder
+ * @author   Rodrigo Arce <rsarce@gmail.com>
+ * @license  MIT License - https://github.com/4lb0/phpmf/
+ * @link     https://github.com/4lb0/phpmf/
+ * @see      http://citizen428.net/archives/1585
+ */
+
+class MethodFinder
+{
+    /**
+     * Blacklist functions
+     * @var array
+     */
+    static protected $blacklist = array(
+        'method_finder.*', 'readline.*', 'xdebug.*', 'pcntl.*', 'mysql.*', 
+        'get_defined_functions', 'file.*', 'mkdir', 'rmdir', 'unlink', 'fopen',
+        'touch', 'copy', 'rename', 'symlink', 'popen', 'link', 'imagecreatefrom.*',
+        'exec', 'shell_exec', 'passthru', 'system', 'mail',
+        'error_log', 'flush', 'ob_.*', 'register_.*', 'bson.*', 
+        'stream_.*', 'socket_.*', 'sqlite_.*', 'xmlwriter_.*',
+    );
+    /**
+     * Find the functions by passing an example how to use it.
+     *
+     * @param array $args   Arguments to pass to the function
+     * @param mixed $result Result expected by the function
+     *
+     * @return array
+     */
+    static public function find(array $args, $result)
+    {
+        $displayErrors = ini_get('display_errors');
+        ini_set('display_errors', false);
+        $definedFunctions = get_defined_functions();
+        $permutations =  count($args) > 1 ? self::arrayPermute($args): array($args);
+        $results = array();
+        $total = count($args);
+        ob_start();
+        $blacklistRegExp = '/^(' . implode(self::$blacklist, '|') . ')$/';
+        foreach ($definedFunctions as $type => $functions) {
+            foreach ($functions as $function) {
+                if (preg_match($blacklistRegExp, $function)) {
+                    continue;
+                }
+                foreach ($permutations as $args) {
+                    $a = array();
+                    $aV = array();
+                    for ($i = 0; $i < $total; $i++) {
+                        $a[] = "\$args[$i]";
+                        $aV[] = var_export($args[$i], true);
+                    }
+                    $arg = implode(',', $a);
+                    $argValues = implode(', ', $aV);
+
+                    try {
+                        $eval = "\$return = \$result === @$function($arg);";
+                        eval($eval);
+                        if ($return) {
+                            $results[] = "$function($argValues) => " 
+                                       . var_export($result, true);
+                        }
+                    } catch (Exception $e) {
+                    }
+                }
+            }
+        }
+        ob_clean();
+        ini_set('display_errors', $displayErrors);
+        return $results;
+    }
+    /**
+     * Return all the permutations of an array 
+     * 
+     * @param array $items Array to get the permutations
+     * @param array $perms Permutations already added (used internally)
+     *
+     * @return mixed
+     */
+    static public function arrayPermute(array $items, array $perms = array())
+    { 
+        static $permuted_array; 
+        if (empty($items)) { 
+            $permuted_array[] = $perms; 
+        } else {
+            for ($i = count($items) - 1; $i >= 0; --$i) { 
+                 $newitems = $items; 
+                 $newperms = $perms; 
+                 list($foo) = array_splice($newitems, $i, 1); 
+                 array_unshift($newperms, $foo); 
+                 self::arrayPermute($newitems, $newperms); 
+            }
+            return $permuted_array; 
+        } 
+    } 
+}
+
+$result = eval('return MethodFinder::find(' 
+        . 'array(' . $argv[1] . '), ' . $argv[2] . ');');
+echo implode("\n", $result) . "\n";
