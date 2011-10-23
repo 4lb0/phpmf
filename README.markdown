@@ -19,6 +19,8 @@ result as if they were written in PHP (you should wrapped in quotes).
         ./phpmf  "'uppercase only first'" "'Uppercase Only First'"
         ucwords('uppercase only first') => 'Uppercase Only First'
 
+        ./phpmf "'/path/to/some/file.txt'" "'file.txt'"
+        basename('/path/to/some/file.txt') => 'file.txt'
 
 * Array function
         $ ./phpmf  "array('a' => 'x', 'b' => 'y')" "array('a','b')"
@@ -29,4 +31,5 @@ result as if they were written in PHP (you should wrapped in quotes).
           0 => 'a',
           1 => 'b',
         )
+
 
