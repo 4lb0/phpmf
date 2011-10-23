@@ -13,6 +13,7 @@ result as if they were written in PHP (you should wrapped in quotes).
 ## Examples ##
 
 * String functions
+
         $ ./phpmf  "'uppercase only first'" "'Uppercase only first'"
         ucfirst('uppercase only first') => 'Uppercase only first'
 
@@ -23,6 +24,7 @@ result as if they were written in PHP (you should wrapped in quotes).
         basename('/path/to/some/file.txt') => 'file.txt'
 
 * Array function
+
         $ ./phpmf  "array('a' => 'x', 'b' => 'y')" "array('a','b')"
         array_keys(array (
           'a' => 'x',
@@ -31,5 +33,4 @@ result as if they were written in PHP (you should wrapped in quotes).
           0 => 'a',
           1 => 'b',
         )
-
 
